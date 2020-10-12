@@ -1,4 +1,5 @@
 const createMemory = require("./create-memory");
+const instructions = require("./instructions");
 
 class CPU {
     constructor(memory) {
@@ -12,10 +13,17 @@ class CPU {
 
         this.registers = createMemory(this.registerNames.length * 2);
 
-        this.registerMap = this.registeredNames.reduce((map, name, i) => {
+        this.registerMap = this.registerNames.reduce((map, name, i) => {
             map[name] = i * 2;
             return map;
         }, {});
+    }
+
+    debug() {
+        this.registerNames.forEach(name => {
+            console.log(`${name}: 0x${this.getRegister(name).toString(16).padStart(4,'0')}`);
+        })
+        console.log();
     }
 
     getRegister(name) {
@@ -44,19 +52,19 @@ class CPU {
     execute(instruction) {
         switch(instruction) {
             //mv literal value into r1 register
-            case 0x10: {
+            case instructions.MOV_LIT_R1: {
+                const literal  = this.fetch();
+                this.setRegister('r1', literal);
+                return;
+            }
+            //mv literal value into r2 register
+            case instructions.MOV_LIT_R2: {
                 const literal  = this.fetch16();
                 this.setRegister('r1', literal);
                 return;
             }
             //mv literal value into r2 register
-            case 0x11: {
-                const literal  = this.fetch16();
-                this.setRegister('r1', literal);
-                return;
-            }
-            //mv literal value into r2 register
-            case 0x12: {
+            case instructions.ADD_REG_REG: {
                 const r1 = this.fetch();
                 const r2 = this.fetch();
                 const registerValue1 = this.registers.getUint16(r1*2);
