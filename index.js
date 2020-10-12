@@ -20,11 +20,12 @@ writeableBytes[7] = 2;
 writeableBytes[8] = 3;
 
 cpu.debug();
-cpu.step();
 
+cpu.step();
 cpu.debug();
-cpu.step();
 
+cpu.step();
 cpu.debug();
-cpu.step();
 
+cpu.step();
+cpu.debug();
