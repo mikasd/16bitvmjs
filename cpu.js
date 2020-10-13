@@ -28,7 +28,11 @@ class CPU {
   }
 
   viewMemoryAt(address) {
-    return;
+    const nextEightBytes = Array.from({length: 8}, (_, i) => 
+    this.memory.getUint8(address + 1)
+    ).map(v => `0x${v.toString(16).padStart(2, '0')}`);
+    
+    console.log(`0x${address.toString(16).padStart(4,'0')}: ${nextEightBytes.join(' ')}`);
   }
 
   getRegister(name) {
