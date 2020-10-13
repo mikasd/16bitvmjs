@@ -1,4 +1,3 @@
-
 const createMemory = require('./create-memory');
 const instructions = require('./instructions');
 
@@ -28,11 +27,11 @@ class CPU {
   }
 
   viewMemoryAt(address) {
-    const nextEightBytes = Array.from({length: 8}, (_, i) => 
-    this.memory.getUint8(address + 1)
+    const nextEightBytes = Array.from({length: 8}, (_, i) =>
+      this.memory.getUint8(address + i)
     ).map(v => `0x${v.toString(16).padStart(2, '0')}`);
-    
-    console.log(`0x${address.toString(16).padStart(4,'0')}: ${nextEightBytes.join(' ')}`);
+
+    console.log(`0x${address.toString(16).padStart(4, '0')}: ${nextEightBytes.join(' ')}`);
   }
 
   getRegister(name) {
@@ -65,7 +64,7 @@ class CPU {
 
   execute(instruction) {
     switch (instruction) {
-      // Move literal into the register
+      // Move literal into register
       case instructions.MOV_LIT_REG: {
         const literal = this.fetch16();
         const register = (this.fetch() % this.registerNames.length) * 2;
@@ -82,7 +81,7 @@ class CPU {
         return;
       }
 
-      //mv reg to mem
+      // Move register to memory
       case instructions.MOV_REG_MEM: {
         const registerFrom = (this.fetch() % this.registerNames.length) * 2;
         const address = this.fetch16();
@@ -91,11 +90,11 @@ class CPU {
         return;
       }
 
-      //mv mem to reg
+      // Move memory to register
       case instructions.MOV_MEM_REG: {
         const address = this.fetch16();
         const registerTo = (this.fetch() % this.registerNames.length) * 2;
-        const value = this.memory.getUint16(registerFrom);
+        const value = this.memory.getUint16(address);
         this.registers.setUint16(registerTo, value);
         return;
       }
@@ -107,6 +106,18 @@ class CPU {
         const registerValue1 = this.registers.getUint16(r1 * 2);
         const registerValue2 = this.registers.getUint16(r2 * 2);
         this.setRegister('acc', registerValue1 + registerValue2);
+        return;
+      }
+
+      // Jump if not equal
+      case instructions.JMP_NOT_EQ: {
+        const value = this.fetch16();
+        const address = this.fetch16();
+
+        if (value !== this.getRegister('acc')) {
+          this.setRegister('ip', address);
+        }
+
         return;
       }
     }
