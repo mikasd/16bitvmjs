@@ -27,6 +27,10 @@ class CPU {
     console.log();
   }
 
+  viewMemoryAt(address) {
+    return;
+  }
+
   getRegister(name) {
     if (!(name in this.registerMap)) {
       throw new Error(`getRegister: No such register '${name}'`);
@@ -57,17 +61,38 @@ class CPU {
 
   execute(instruction) {
     switch (instruction) {
-      // Move literal into the r1 register
-      case instructions.MOV_LIT_R1: {
+      // Move literal into the register
+      case instructions.MOV_LIT_REG: {
         const literal = this.fetch16();
-        this.setRegister('r1', literal);
+        const register = (this.fetch() % this.registerNames.length) * 2;
+        this.registers.setUint16(register, literal);
         return;
       }
 
-      // Move literal into the r2 register
-      case instructions.MOV_LIT_R2: {
-        const literal = this.fetch16();
-        this.setRegister('r2', literal);
+      // Move register to register
+      case instructions.MOV_REG_REG: {
+        const registerFrom = (this.fetch() % this.registerNames.length) * 2;
+        const registerTo = (this.fetch() % this.registerNames.length) * 2;
+        const value = this.registers.getUint16(registerFrom);
+        this.registers.setUint16(registerTo, value);
+        return;
+      }
+
+      //mv reg to mem
+      case instructions.MOV_REG_MEM: {
+        const registerFrom = (this.fetch() % this.registerNames.length) * 2;
+        const address = this.fetch16();
+        const value = this.registers.getUint16(registerFrom);
+        this.memory.setUint16(address, value);
+        return;
+      }
+
+      //mv mem to reg
+      case instructions.MOV_MEM_REG: {
+        const address = this.fetch16();
+        const registerTo = (this.fetch() % this.registerNames.length) * 2;
+        const value = this.memory.getUint16(registerFrom);
+        this.registers.setUint16(registerTo, value);
         return;
       }
 
