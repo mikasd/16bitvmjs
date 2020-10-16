@@ -1,5 +1,5 @@
-const createMemory = require('./create-memory');
-const instructions = require('./instructions');
+import createMemory from './create-memory';
+import { MOV_LIT_REG, MOV_REG_REG, MOV_REG_MEM, MOV_MEM_REG, ADD_REG_REG, JMP_NOT_EQ } from './instructions';
 
 class CPU {
   constructor(memory) {
@@ -65,7 +65,7 @@ class CPU {
   execute(instruction) {
     switch (instruction) {
       // Move literal into register
-      case instructions.MOV_LIT_REG: {
+      case MOV_LIT_REG: {
         const literal = this.fetch16();
         const register = (this.fetch() % this.registerNames.length) * 2;
         this.registers.setUint16(register, literal);
@@ -73,7 +73,7 @@ class CPU {
       }
 
       // Move register to register
-      case instructions.MOV_REG_REG: {
+      case MOV_REG_REG: {
         const registerFrom = (this.fetch() % this.registerNames.length) * 2;
         const registerTo = (this.fetch() % this.registerNames.length) * 2;
         const value = this.registers.getUint16(registerFrom);
@@ -82,7 +82,7 @@ class CPU {
       }
 
       // Move register to memory
-      case instructions.MOV_REG_MEM: {
+      case MOV_REG_MEM: {
         const registerFrom = (this.fetch() % this.registerNames.length) * 2;
         const address = this.fetch16();
         const value = this.registers.getUint16(registerFrom);
@@ -91,7 +91,7 @@ class CPU {
       }
 
       // Move memory to register
-      case instructions.MOV_MEM_REG: {
+      case MOV_MEM_REG: {
         const address = this.fetch16();
         const registerTo = (this.fetch() % this.registerNames.length) * 2;
         const value = this.memory.getUint16(address);
@@ -100,7 +100,7 @@ class CPU {
       }
 
       // Add register to register
-      case instructions.ADD_REG_REG: {
+      case ADD_REG_REG: {
         const r1 = this.fetch();
         const r2 = this.fetch();
         const registerValue1 = this.registers.getUint16(r1 * 2);
@@ -110,7 +110,7 @@ class CPU {
       }
 
       // Jump if not equal
-      case instructions.JMP_NOT_EQ: {
+      case JMP_NOT_EQ: {
         const value = this.fetch16();
         const address = this.fetch16();
 
@@ -129,4 +129,4 @@ class CPU {
   }
 }
 
-module.exports = CPU;
+export default CPU;
