@@ -1,5 +1,5 @@
-import createMemory from './create-memory';
-import { MOV_LIT_REG, MOV_REG_REG, MOV_REG_MEM, MOV_MEM_REG, ADD_REG_REG, JMP_NOT_EQ, PSH_REG } from './instructions';
+const createMemory = require('./create-memory');
+const instructions = require('./instructions');
 
 class CPU {
   constructor(memory) {
@@ -8,7 +8,8 @@ class CPU {
     this.registerNames = [
       'ip', 'acc',
       'r1', 'r2', 'r3', 'r4',
-      'r5', 'r6', 'r7', 'r8'
+      'r5', 'r6', 'r7', 'r8',
+      'sp', 'fp'
     ];
 
     this.registers = createMemory(this.registerNames.length * 2);
@@ -87,7 +88,7 @@ class CPU {
   execute(instruction) {
     switch (instruction) {
       // Move literal into register
-      case MOV_LIT_REG: {
+      case instructions.MOV_LIT_REG: {
         const literal = this.fetch16();
         const register = this.fetchRegisterIndex();
         this.registers.setUint16(register, literal);
@@ -95,7 +96,7 @@ class CPU {
       }
 
       // Move register to register
-      case MOV_REG_REG: {
+      case instructions.MOV_REG_REG: {
         const registerFrom = this.fetchRegisterIndex();
         const registerTo = this.fetchRegisterIndex();
         const value = this.registers.getUint16(registerFrom);
@@ -104,7 +105,7 @@ class CPU {
       }
 
       // Move register to memory
-      case MOV_REG_MEM: {
+      case instructions.MOV_REG_MEM: {
         const registerFrom = this.fetchRegisterIndex();
         const address = this.fetch16();
         const value = this.registers.getUint16(registerFrom);
@@ -113,7 +114,7 @@ class CPU {
       }
 
       // Move memory to register
-      case MOV_MEM_REG: {
+      case instructions.MOV_MEM_REG: {
         const address = this.fetch16();
         const registerTo = this.fetchRegisterIndex();
         const value = this.memory.getUint16(address);
@@ -122,7 +123,7 @@ class CPU {
       }
 
       // Add register to register
-      case ADD_REG_REG: {
+      case instructions.ADD_REG_REG: {
         const r1 = this.fetch();
         const r2 = this.fetch();
         const registerValue1 = this.registers.getUint16(r1 * 2);
@@ -132,7 +133,7 @@ class CPU {
       }
 
       // Jump if not equal
-      case JMP_NOT_EQ: {
+      case instructions.JMP_NOT_EQ: {
         const value = this.fetch16();
         const address = this.fetch16();
 
@@ -144,19 +145,19 @@ class CPU {
       }
 
       //push literal
-      case PSH_LIT: {
+      case instructions.PSH_LIT: {
         const value = this.fetch16();
         this.push(value);
         return;
       }
 
-      case PSH_REG: {
+      case instructions.PSH_REG: {
         const registerIndex = this.fetchRegisterIndex();
         this.push(this.registers.getUint16(registerIndex));
         return;
       }
 
-      case POP: {
+      case instructions.POP: {
         const registerIndex = this.fetchRegisterIndex();
         const value = this.pop();
         this.registers.setUint16(registerIndex, value);
@@ -171,4 +172,4 @@ class CPU {
   }
 }
 
-export default CPU;
+module.exports = CPU;
