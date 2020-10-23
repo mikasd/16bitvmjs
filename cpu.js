@@ -24,6 +24,8 @@ class CPU {
     this.setRegister('sp', memory.byteLength - 1 - 1);
     //frame pointer
     this.setRegister('fp', memory.byteLength - 1 - 1);
+
+    this.stackFrameSize = 0;
   }
 
   debug() {
@@ -73,6 +75,7 @@ class CPU {
     const spAddress = this.getRegister('sp');
     this.memory.setUint16(spAddress, value);
     this.setRegister('sp', spAddress-2);
+    this.stackFrameSize += 2;
   }
 
   fetchRegisterIndex(){
@@ -82,7 +85,24 @@ class CPU {
   pop() {
     const nextSpAddress = this.getRegister('sp') + 2;
     this.setRegister('sp', nextSpAddress);
+    this.stackFrameSize -= 2;
     return this.memory.getUint16(nextSpAddress);
+  }
+
+  pushState() {
+    this.push(this.getRegister('r1'));
+    this.push(this.getRegister('r2'));
+    this.push(this.getRegister('r3'));
+    this.push(this.getRegister('r4'));
+    this.push(this.getRegister('r5'));
+    this.push(this.getRegister('r6'));
+    this.push(this.getRegister('r7'));
+    this.push(this.getRegister('r8'));
+    this.push(this.getRegister('ip'));
+    this.push(this.stackFrameSize + 2);
+
+    this.setRegister('fp', this.getRegister('sp'));
+    this.stackFrameSize = 0;
   }
 
   execute(instruction) {
@@ -144,7 +164,6 @@ class CPU {
         return;
       }
 
-      //push literal
       case instructions.PSH_LIT: {
         const value = this.fetch16();
         this.push(value);
@@ -162,6 +181,14 @@ class CPU {
         const value = this.pop();
         this.registers.setUint16(registerIndex, value);
         return;
+      }
+
+      case instructions.CAL_LIT: {
+        const address = this.fetch16();
+        this.pushState();
+        this.setRegister('ip', address);
+
+
       }
     }
   }

@@ -7,6 +7,8 @@ const JMP_NOT_EQ  = 0x15;
 const PSH_LIT     = 0x17;
 const PSH_REG     = 0x18;
 const POP         = 0x1A;
+const CAL_LIT     = 0x5E;
+const CAL_REG     = 0x5F;
 
 module.exports = {
     MOV_LIT_REG,
@@ -17,5 +19,7 @@ module.exports = {
     JMP_NOT_EQ,
     PSH_LIT,
     PSH_REG,
-    POP
+    POP,
+    CAL_LIT,
+    CAL_REG,
 };  
