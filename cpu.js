@@ -19,7 +19,6 @@ class CPU {
       return map;
     }, {});
 
-    //two minus 1, first for zero index, second we need 2 bytes to store 16bit val
     //stack pointer
     this.setRegister('sp', memory.byteLength - 1 - 1);
     //frame pointer
@@ -35,12 +34,12 @@ class CPU {
     console.log();
   }
 
-  viewMemoryAt(address) {
-    const nextEightBytes = Array.from({length: 8}, (_, i) =>
+  viewMemoryAt(address, n = 8) {
+    const nextNBytes = Array.from({length: n}, (_, i) =>
       this.memory.getUint8(address + i)
     ).map(v => `0x${v.toString(16).padStart(2, '0')}`);
 
-    console.log(`0x${address.toString(16).padStart(4, '0')}: ${nextEightBytes.join(' ')}`);
+    console.log(`0x${address.toString(16).padStart(4, '0')}: ${nextNBytes.join(' ')}`);
   }
 
   getRegister(name) {
@@ -105,10 +104,34 @@ class CPU {
     this.stackFrameSize = 0;
   }
 
+  popState() {
+    const framePointerAddress = this.getRegister('fp');
+    this.setRegister('sp', framePointerAddress);
+
+    this.stackFrameSize = this.pop();
+    const stackFrameSize = this.stackFrameSize; 
+
+    this.setRegister('ip', this.pop());
+    this.setRegister('r8', this.pop());
+    this.setRegister('r7', this.pop());
+    this.setRegister('r6', this.pop());
+    this.setRegister('r5', this.pop());
+    this.setRegister('r4', this.pop());
+    this.setRegister('r3', this.pop());
+    this.setRegister('r2', this.pop());
+    this.setRegister('r1', this.pop());
+
+    const nArgs = this.pop();
+    for (let i = 0; i < nArgs; i++) {
+      this.pop();
+    }
+
+    this.setRegister('fp', framePointerAddress + stackFrameSize);
+  }
   execute(instruction) {
-    switch (instruction) {
-      // Move literal into register
-      case instructions.MOV_LIT_REG: {
+   switch (instruction) {
+     // Move literal into register
+     case instructions.MOV_LIT_REG: {
         const literal = this.fetch16();
         const register = this.fetchRegisterIndex();
         this.registers.setUint16(register, literal);
@@ -187,8 +210,19 @@ class CPU {
         const address = this.fetch16();
         this.pushState();
         this.setRegister('ip', address);
+      }
 
+      case instructions.CAL_REG: {
+        const registerIndex = this.fetchRegisterIndex();
+        const address = this.registers.getUint16(registerIndex);
+        this.pushState();
+        this.setRegister('ip', address);
+        return;
+      }
 
+      case instructions.RET: {
+        this.popState();
+        return;
       }
     }
   }

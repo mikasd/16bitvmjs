@@ -9,6 +9,7 @@ const PSH_REG     = 0x18;
 const POP         = 0x1A;
 const CAL_LIT     = 0x5E;
 const CAL_REG     = 0x5F;
+const RET         = 0x60;
 
 module.exports = {
     MOV_LIT_REG,
@@ -22,4 +23,5 @@ module.exports = {
     POP,
     CAL_LIT,
     CAL_REG,
+    RET,    
 };  
