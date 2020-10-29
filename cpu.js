@@ -224,12 +224,24 @@ class CPU {
         this.popState();
         return;
       }
+
+      // halt all computing
+      case instructions.HLT: {
+        return true;
+      }
     }
   }
 
   step() {
     const instruction = this.fetch();
     return this.execute(instruction);
+  }
+
+  run() {
+    const halt = this.step();
+    if (!halt) {
+      setImmediate(() => this.run());
+    }
   }
 }
 
