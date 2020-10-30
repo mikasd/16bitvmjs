@@ -3,7 +3,9 @@ const createMemory = require('./create-memory');
 const CPU = require('./cpu');
 const instructions = require('./instructions');
 const { write } = require('fs');
-
+const MemoryMapper = require('./memory-mapper');
+const createScreenDevice = require('./screen-device');
+ 
 const IP = 0;
 const ACC = 1;
 const R1 = 2;
@@ -17,90 +19,37 @@ const R8 = 9;
 const SP = 10;
 const FP = 11;
 
+const MM = new MemoryMapper();
+
 const memory = createMemory(256*256);
+MM.map(memory, 0, 0xffff);
+
+//map 0xff bytes of addr of space to an output device aka stdout
+MM.map(createScreenDevice(), 0x3000, 0x30ff, true);
+
 const writableBytes = new Uint8Array(memory.buffer);
 
-const cpu = new CPU(memory);
-
-const subroutineAddress = 0x3000;
+const cpu = new CPU(MM);
 
 let i = 0;
 
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x33;
-writableBytes[i++] = 0x33;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x22;
-writableBytes[i++] = 0x22;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x11;
-writableBytes[i++] = 0x11;
-
+const writeCharToScreen = (char, position) => {
 writableBytes[i++] = instructions.MOV_LIT_REG;
-writableBytes[i++] = 0x12;
-writableBytes[i++] = 0x34;
+writableBytes[i++] = 0x00;
+writableBytes[i++] = `${char}`.charCodeAt(0);
 writableBytes[i++] = R1;
 
-writableBytes[i++] = instructions.MOV_LIT_REG;
-writableBytes[i++] = 0x56;
-writableBytes[i++] = 0x78;
-writableBytes[i++] = R4;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x00;
-writableBytes[i++] = 0x00;
-
-writableBytes[i++] = instructions.CAL_LIT;
-//uses bit shifts and masks to isolate the top and bottom bytes of the 0x3000 address in subroutine variable
-writableBytes[i++] = (subroutineAddress & 0xff00) >> 8;
-writableBytes[i++] = (subroutineAddress & 0x00ff);
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x44;
-writableBytes[i++] = 0x44;
-
-//subroutine
-i = subroutineAddress;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x01;
-writableBytes[i++] = 0x02;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x03;
-writableBytes[i++] = 0x02;
-
-writableBytes[i++] = instructions.PSH_LIT;
-writableBytes[i++] = 0x05;
-writableBytes[i++] = 0x06;
-
-writableBytes[i++] = instructions.MOV_LIT_REG;
-writableBytes[i++] = 0x07;
-writableBytes[i++] = 0x08;
+writableBytes[i++] = instructions.MOV_REG_MEM;
 writableBytes[i++] = R1;
+writableBytes[i++] = 0x30;
+writableBytes[i++] = position;
+}
 
-writableBytes[i++] = instructions.MOV_LIT_REG;
-writableBytes[i++] = 0x09;
-writableBytes[i++] = 0x0A;
-writableBytes[i++] = R8;
+"Hello World".split('').forEach((char, index) => {
+  writeCharToScreen(char, index);
+})
 
-writableBytes[i++] = instructions.RET;
+writableBytes[i++] = instructions.HLT;
 
-console.log("==================INIT=================")
-cpu.debug();
-cpu.viewMemoryAt(cpu.getRegister('ip'));
-cpu.viewMemoryAt(0xffff - 1 - 42, 44);
+cpu.run();
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-rl.on('line', () => {
-  cpu.step();
-  cpu.debug();
-  cpu.viewMemoryAt(cpu.getRegister('ip'));
-  cpu.viewMemoryAt(0xffff - 1 - 42, 44);
-});
