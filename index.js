@@ -33,9 +33,9 @@ const cpu = new CPU(MM);
 
 let i = 0;
 
-const writeCharToScreen = (char, position) => {
+const writeCharToScreen = (char, command, position) => {
 writableBytes[i++] = instructions.MOV_LIT_REG;
-writableBytes[i++] = 0x00;
+writableBytes[i++] = command;
 writableBytes[i++] = char.charCodeAt(0);
 writableBytes[i++] = R1;
 
@@ -45,8 +45,13 @@ writableBytes[i++] = 0x30;
 writableBytes[i++] = position;
 };
 
+// clear screen prior to print loop
+writeCharToScreen('', 0xff, 0);
+
 for (let i = 0; i <= 0xff; i++) {
-  writeCharToScreen('*', i);
+  // if index is even number, print bold char, else print regular char
+  const command = i % 2 == 0 ? 0x01 : 0x02;
+  writeCharToScreen('*', command, i);
 }
 
 writableBytes[i++] = instructions.HLT;
