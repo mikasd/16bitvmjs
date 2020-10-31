@@ -36,18 +36,18 @@ let i = 0;
 const writeCharToScreen = (char, position) => {
 writableBytes[i++] = instructions.MOV_LIT_REG;
 writableBytes[i++] = 0x00;
-writableBytes[i++] = `${char}`.charCodeAt(0);
+writableBytes[i++] = char.charCodeAt(0);
 writableBytes[i++] = R1;
 
 writableBytes[i++] = instructions.MOV_REG_MEM;
 writableBytes[i++] = R1;
 writableBytes[i++] = 0x30;
 writableBytes[i++] = position;
-}
+};
 
-"Hello World".split('').forEach((char, index) => {
-  writeCharToScreen(char, index);
-})
+for (let i = 0; i <= 0xff; i++) {
+  writeCharToScreen('*', i);
+}
 
 writableBytes[i++] = instructions.HLT;
 
