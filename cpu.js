@@ -173,6 +173,23 @@ class CPU {
         return;
       }
 
+      //add lit val to reg
+      case instructions.ADD_LIT_REG: {
+        const literal = this.fetch16();
+        const r1 = this.fetchRegisterIndex();
+        const registerValue = this.registers.getUint16(r1);
+        this.setRegister('acc', literal + registerValue);
+        return;
+      }
+
+      case instructions.SUB_LIT_REG: {
+        const literal = this.fetch16();
+        const r1 = this.fetchRegisterIndex();
+        const registerValue = this.registers.getUint16(r1);
+        this.setRegister('acc', registerValue - literal);
+        return;
+      }
+
       //mv reg* to reg
       case instructions.MOV_REG_PTR_REG: {
         const r1 = this.fetchRegisterIndex();
